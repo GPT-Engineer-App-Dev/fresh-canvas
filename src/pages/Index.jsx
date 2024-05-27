@@ -1,7 +1,22 @@
-import { Box, Container, Flex, Heading, HStack, Link, Spacer, Text, VStack } from "@chakra-ui/react";
+import { Box, Container, Flex, Heading, HStack, Link, Spacer, Text, VStack, Spinner, Alert, AlertIcon, Button } from "@chakra-ui/react";
+import { useEvents, useAddEvent } from '../api/supabase';
 import { Link as RouterLink } from "react-router-dom";
 
 const Index = () => {
+  const { data: events, error, isLoading } = useEvents();
+  const addEventMutation = useAddEvent();
+
+  if (isLoading) return <Spinner />;
+  if (error) return (
+    <Alert status="error">
+      <AlertIcon />
+      {error.message}
+    </Alert>
+  );
+
+  const handleAddEvent = () => {
+    addEventMutation.mutate({ name: 'New Event', date: '2023-10-10', description: 'Description of the new event' });
+  };
   return (
     <Box>
       <Flex as="nav" bg="blue.500" color="white" padding={4}>
@@ -23,6 +38,15 @@ const Index = () => {
         <VStack spacing={4}>
           <Heading fontSize="4xl">Welcome to MyWebsite</Heading>
           <Text fontSize="xl">This is a blank canvas for your one-page website.</Text>
+        <Button onClick={handleAddEvent}>Add Event</Button>
+          <VStack spacing={4}>
+            {events.map(event => (
+              <Box key={event.id} p={5} shadow="md" borderWidth="1px">
+                <Heading fontSize="xl">{event.name}</Heading>
+                <Text mt={4}>{event.description}</Text>
+              </Box>
+            ))}
+          </VStack>
         </VStack>
       </Container>
     </Box>
